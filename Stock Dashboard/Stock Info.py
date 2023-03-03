@@ -4,6 +4,8 @@ import streamlit as st
 from datetime import datetime
 import time
 
+# streamlit run "c:/Users/jack_/OneDrive/Personal Github/Projects/Stock Dashboard/Stock Info.py"
+
 
 class stock_info:
     def __init__(self) -> None:
@@ -11,7 +13,9 @@ class stock_info:
 
         st.sidebar.title("Stock Information")
         self.ticker = st.sidebar.text_input(
-            label="Select a stock", placeholder="Ticker", max_chars=5, value="NVDA"
+            label="Select a stock",
+            placeholder="Ticker",
+            max_chars=5,
         )
 
         self.news_button = st.sidebar.checkbox(
