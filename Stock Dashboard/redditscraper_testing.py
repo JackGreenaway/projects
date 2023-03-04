@@ -11,7 +11,7 @@ reddit = praw.Reddit(
 
 ticker_count = dict()
 for submission in reddit.subreddit("wallstreetbets").search(
-    query="$", time_filter="month", sort="hot"
+    query="$", time_filter="month", sort="trending"
 ):
     valid_checker = list(submission.title)
     # if "$" in valid_checker:  # check to see if the title has a $ in it
