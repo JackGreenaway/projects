@@ -4,12 +4,13 @@ import streamlit as st
 from datetime import datetime
 import time
 
-# streamlit run "c:/Users/jack_/OneDrive/Personal Github/Projects/Stock Dashboard/Stock Info.py"
+st.set_page_config(layout="wide")
 
 
 class stock_info:
     def __init__(self) -> None:
-        st.set_page_config(layout="wide")
+        with open("Stock Dashboard\style.css") as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
         st.sidebar.title("Stock Information")
         self.ticker = st.sidebar.text_input(
@@ -43,14 +44,19 @@ class stock_info:
                 pass
         except:
             st.header("Enter a ticker")
-        self.present_data()
+        self.format_data()
         if self.news_button:
             self.news_channel()
 
-    def present_data(self):
+    def format_data(self):
         self.df["pc_close"] = self.df["Close"].pct_change()
         self.df["pc_open"] = self.df["Open"].pct_change()
         self.df["pc_volume"] = self.df["Volume"].pct_change()
+        self.present_data()
+
+    def present_data(self):
+        # with open("Stock Dashboard\style.css") as f:
+        #    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
         col1, col2, col3 = st.columns(3)
 
@@ -75,6 +81,7 @@ class stock_info:
             value=round(self.df["Volume"][::-1][0], 2),
             delta="%.2f" % (round(self.df["pc_volume"][::-1][0], 4) * 100),
         )
+
         # while True:
         #    time.sleep(60)
         #    self.present_data()
