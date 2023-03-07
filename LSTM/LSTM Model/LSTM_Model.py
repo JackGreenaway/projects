@@ -44,31 +44,40 @@ instance = lstm_model("^GSPC", 10)
 instance.train_test_split
 
 
+# ------------------------------------------------------------------------------------------------------------------------------
+
+
+import yfinance as yf
 import pandas as pd
 import numpy as np
+
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
 from keras.layers import Dense, LSTM
 
 
 class LSTMPredictor:
-    def __init__(self, n_steps=10, n_features=1, n_epochs=100, batch_size=32):
+    def __init__(self, ticker, n_steps=10, n_features=1, n_epochs=100, batch_size=32):
+        self.ticker = ticker
         self.n_steps = n_steps
         self.n_features = n_features
         self.n_epochs = n_epochs
         self.batch_size = batch_size
 
-    def split_sequence(self, sequence):
+    def download_data(self):
+        self.data = yf.download(self.ticker, start="2010-01-01")
+
+    def split_data(self):
         X, y = [], []
-        for i in range(len(sequence) - self.n_steps):
-            X.append(sequence[i : i + self.n_steps, 0])
-            y.append(sequence[i + self.n_steps, 0])
+        for i in range(len(self.data) - self.n_steps):
+            X.append(self.data[i : i + self.n_steps, 0])
+            y.append(self.data[i + self.n_steps, 0])
         return np.array(X), np.array(y)
 
-    def fit(self, data):
+    def fit(self):
         self.scaler = MinMaxScaler(feature_range=(0, 1))
-        scaled_data = self.scaler.fit_transform(data.values.reshape(-1, 1))
-        X, y = self.split_sequence(scaled_data)
+        scaled_data = self.scaler.fit_transform(self.data.values.reshape(-1, 1))
+        X, y = self.split_data(scaled_data)
         X = X.reshape((X.shape[0], X.shape[1], self.n_features))
         model = Sequential()
         model.add(
@@ -84,8 +93,8 @@ class LSTMPredictor:
         model.fit(X, y, epochs=self.n_epochs, batch_size=self.batch_size, verbose=1)
         self.model = model
 
-    def predict(self, data):
-        scaled_data = self.scaler.transform(data.values.reshape(-1, 1))
+    def predict(self):
+        scaled_data = self.scaler.transform(self.data.values.reshape(-1, 1))
         X = np.array([scaled_data[-self.n_steps :, 0]])
         X = X.reshape((X.shape[0], X.shape[1], self.n_features))
         yhat = self.model.predict(X)
