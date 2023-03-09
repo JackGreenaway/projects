@@ -12,6 +12,8 @@ from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from keras import Sequential
 from keras.layers import LSTM, Dense, LeakyReLU
+import keras_tuner as kt
+from keras_tuner import RandomSearch
 
 
 class lstm_model:
@@ -21,11 +23,17 @@ class lstm_model:
         self.epoch = epoch
         self.batch_size = batch_size
 
+        self.callback = tf.keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=10,
+        )
+
         # methods
         self.load_data()
         self.data_scale()
         self.preprocessing()
-        self.build_model()
+        # self.build_model()
+        self.search_hp()
         self.train_model()
 
         # self.check_train_test()
@@ -69,21 +77,23 @@ class lstm_model:
             self.x_train.shape, self.x_test.shape, self.y_train.shape, self.y_test.shape
         )
 
-    def build_model(self):
+    def build_model(self, hp):
         # define a model that we will train the data on
         model = Sequential()
         model.add(
             LSTM(
-                50,
+                hp.Choice("units1", [8, 16, 32, 64, 128]),
                 return_sequences=True,
                 activation="relu",
                 input_shape=(self.x_train.shape[1], self.x_test.shape[2]),
             )
         )
         model.add(LeakyReLU(alpha=0.3))
-        model.add(LSTM(40, return_sequences=False))
+        model.add(
+            LSTM(hp.Choice("units2", [8, 16, 32, 64, 128]), return_sequences=False)
+        )
         model.add(LeakyReLU(alpha=0.3))
-        model.add(Dense(15))
+        model.add(Dense(hp.Choice("units3", [8, 16, 32, 64, 128])))
 
         model.add(Dense(1, activation="sigmoid"))
 
@@ -92,20 +102,29 @@ class lstm_model:
             loss="mean_squared_error",
         )
 
-        self.callback = tf.keras.callbacks.EarlyStopping(
-            monitor="val_loss",
-            patience=10,
-        )
-
         self.model = model
         return self.model
 
     def search_hp(self):
-        pass
+        tuner = kt.RandomSearch(
+            self.build_model,
+            objective="val_loss",
+            max_trials=5,
+            directory="RandomSearch",
+            project_name="Rs v1.0",
+        )
+        tuner.search(
+            self.x_train,
+            self.y_train,
+            epochs=5,
+            validation_split=0.2,
+            # callbacks=self.callback, # not iterable?
+        )
+        self.hpModel = tuner.get_best_models()[0]
 
     def train_model(self):
         # train the model on the historical train data
-        self.trained_model = self.model.fit(
+        self.trained_model = self.hpModel.fit(
             self.x_train,
             self.y_train,
             epochs=self.epoch,
@@ -132,7 +151,8 @@ class lstm_model:
         model_historical_pred = self.scaler.inverse_transform(model_historical_pred)
 
         os.system("cls")
-        print("Training Complete")
+        self.hpModel.summary()
+        print("\nTraining Complete")
 
         # descale the data for plotting
         y_test_descaled = self.scaler.inverse_transform(self.y_test)
@@ -227,6 +247,9 @@ class lstm_model:
         labels = ["Future Predicitons", "Historical", "Historical Predictions"]
         plt.legend(labels)
         plt.show()
+
+        def outputs(self):
+            pass  # ???
 
 
 instance = lstm_model("AAPL", lookback=15, epoch=50, batch_size=16)
