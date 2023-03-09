@@ -34,7 +34,7 @@ class stock_info:
             self.df = yf.download(self.ticker, period="1y")
             time = datetime.now()
             time_str = time.strftime("%d/%m/%Y @ %H:%M:%S")
-            st.title(f"Current {self.ticker} data")
+            st.title(f"Current {self.ticker.upper()} data")
             st.subheader(time_str)
             if self.df.empty:
                 st.header(f"Incorrect ticker ({self.ticker}) or no data available")

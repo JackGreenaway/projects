@@ -207,6 +207,6 @@ class lstm_model:
         plt.show()
 
 
-instance = lstm_model("AAPL")
+instance = lstm_model("NVDA")
 
 instance.future_predict()
