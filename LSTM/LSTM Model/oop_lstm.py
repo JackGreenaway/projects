@@ -110,7 +110,7 @@ class lstm_model:
             self.build_model,
             objective="val_loss",
             max_trials=5,
-            directory="RandomSearch",
+            directory="LSTM Model\RandomSearch",
             project_name="Rs v1.0",
         )
         tuner.search(
