@@ -11,7 +11,7 @@ from sklearn.model_selection import train_test_split
 
 import tensorflow as tf
 from keras import Sequential
-from keras.layers import LSTM, Dense, LeakyReLU
+from keras.layers import LSTM, Dense, LeakyReLU, Dropout
 import keras_tuner as kt
 from keras_tuner import RandomSearch
 
@@ -45,7 +45,7 @@ class lstm_model:
 
     def load_data(self):
         # load the raw data
-        self.raw_data = yf.download(self.ticker, start="2018-01-01")["Adj Close"]
+        self.raw_data = yf.download(self.ticker, start="2010-01-01")["Adj Close"]
 
     def data_scale(self):
         # scale the dataset
@@ -82,23 +82,26 @@ class lstm_model:
         model = Sequential()
         model.add(
             LSTM(
-                hp.Choice("units1", [8, 16, 32, 64, 128]),
+                units=hp.Int("units1", min_value=16, max_value=512, step=16),
                 return_sequences=True,
                 activation="relu",
                 input_shape=(self.x_train.shape[1], self.x_test.shape[2]),
             )
         )
         model.add(LeakyReLU(alpha=0.3))
+        model.add(Dropout(0.3))
         model.add(
-            LSTM(hp.Choice("units2", [8, 16, 32, 64, 128]), return_sequences=False)
+            LSTM(units=hp.Int("units2", min_value=16, max_value=512, step=16), return_sequences=False)
         )
         model.add(LeakyReLU(alpha=0.3))
-        model.add(Dense(hp.Choice("units3", [8, 16, 32, 64, 128])))
+        model.add(Dense(units=hp.Int("units3", min_value=16, max_value=512, step=16)))
 
         model.add(Dense(1, activation="sigmoid"))
+        
+        learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
 
         model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+            optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
             loss="mean_squared_error",
         )
 
@@ -111,7 +114,7 @@ class lstm_model:
             objective="val_loss",
             max_trials=5,
             directory="LSTM Model\RandomSearch",
-            project_name="Rs v1.0",
+            project_name="Rs v1.05",
         )
         tuner.search(
             self.x_train,
@@ -252,5 +255,5 @@ class lstm_model:
             pass  # ???
 
 
-instance = lstm_model("AAPL", lookback=15, epoch=50, batch_size=16)
+instance = lstm_model("NVDA", lookback=10, epoch=50, batch_size=16)
 instance.model_evaluation()
