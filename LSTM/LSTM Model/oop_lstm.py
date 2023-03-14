@@ -83,11 +83,11 @@ class lstm_model:
                 input_shape=(self.x_train.shape[1], self.x_test.shape[2]),
             )
         )
-        # model.add(LeakyReLU(alpha=0.3))
-        # model.add(Dropout(0.3))
-        # model.add(
-        #     LSTM(units=hp.Int("units2", min_value=16, max_value=512, step=16), return_sequences=False)
-        # )
+        model.add(LeakyReLU(alpha=0.3))
+        model.add(Dropout(0.3))
+        model.add(
+            LSTM(units=hp.Int("units2", min_value=16, max_value=512, step=16), return_sequences=False)
+        )
         model.add(LeakyReLU(alpha=0.3))
         model.add(Dense(units=hp.Int("units3", min_value=16, max_value=512, step=16)))
 
