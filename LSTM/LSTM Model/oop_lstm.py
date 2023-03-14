@@ -22,12 +22,7 @@ class lstm_model:
         self.lookback = lookback
         self.epoch = epoch
         self.batch_size = batch_size
-
-        self.callback = tf.keras.callbacks.EarlyStopping(
-            monitor="val_loss",
-            patience=2,
-        )
-
+        
         # methods
         self.load_data()
         self.data_scale()
@@ -88,11 +83,11 @@ class lstm_model:
                 input_shape=(self.x_train.shape[1], self.x_test.shape[2]),
             )
         )
-        model.add(LeakyReLU(alpha=0.3))
-        model.add(Dropout(0.3))
-        model.add(
-            LSTM(units=hp.Int("units2", min_value=16, max_value=512, step=16), return_sequences=False)
-        )
+        # model.add(LeakyReLU(alpha=0.3))
+        # model.add(Dropout(0.3))
+        # model.add(
+        #     LSTM(units=hp.Int("units2", min_value=16, max_value=512, step=16), return_sequences=False)
+        # )
         model.add(LeakyReLU(alpha=0.3))
         model.add(Dense(units=hp.Int("units3", min_value=16, max_value=512, step=16)))
 
@@ -109,17 +104,21 @@ class lstm_model:
         return self.model
 
     def search_hp(self):
+        self.callback = tf.keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=2,
+        )
         tuner = kt.RandomSearch(
             self.build_model,
             objective="val_loss",
             # max_trials=5,
-            directory="LSTM Model\RandomSearch",
-            project_name="Rs v1.06",
+            directory="LSTM\LSTM Model\RandomSearch",
+            project_name="Rs v1.07",
         )
         tuner.search(
             self.x_train,
             self.y_train,
-            epochs=5,
+            epochs=10,
             validation_split=0.2,
             # callbacks=self.callback, # not iterable?
         )
@@ -255,5 +254,5 @@ class lstm_model:
             pass  # ???
 
 
-instance = lstm_model("BP.L", lookback=3, epoch=50, batch_size=32)
+instance = lstm_model("SHEL.L", lookback=4, epoch=20, batch_size=32)
 instance.model_evaluation()
