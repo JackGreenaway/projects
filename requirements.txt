@@ -6,6 +6,8 @@ tensorflow
 prophet
 yfinance
 streamlit
+scikit-learn
+statsmodels
 tk
 ta
 

@@ -25,7 +25,7 @@ class lstm_model:
 
         self.callback = tf.keras.callbacks.EarlyStopping(
             monitor="val_loss",
-            patience=10,
+            patience=2,
         )
 
         # methods
@@ -112,9 +112,9 @@ class lstm_model:
         tuner = kt.RandomSearch(
             self.build_model,
             objective="val_loss",
-            max_trials=5,
+            # max_trials=5,
             directory="LSTM Model\RandomSearch",
-            project_name="Rs v1.05",
+            project_name="Rs v1.06",
         )
         tuner.search(
             self.x_train,
@@ -247,7 +247,7 @@ class lstm_model:
         plt.title(f"{self.ticker} Future Forecast of {self.days} days")
         plt.plot(future_df)
         plt.plot(past_df)
-        labels = ["Future Predicitons", "Historical", "Historical Predictions"]
+        labels = ["Future Predictions", "Historical", "Historical Predictions"]
         plt.legend(labels)
         plt.show()
 
@@ -255,5 +255,5 @@ class lstm_model:
             pass  # ???
 
 
-instance = lstm_model("NVDA", lookback=10, epoch=50, batch_size=16)
+instance = lstm_model("BP.L", lookback=3, epoch=50, batch_size=32)
 instance.model_evaluation()
